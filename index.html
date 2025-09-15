@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Recibos - Tiger Offers LLC</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 20px;
+            background-color: #f5f5f5;
+        }
+        
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 30px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+        
+        .logo {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 15px;
+            background: #ff6b35;
+            position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .logo::before {
+            content: 'T';
+            color: black;
+            font-size: 48px;
+            font-weight: bold;
+            font-family: Arial, sans-serif;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+        
+        h1 {
+            color: #2c3e50;
+            border-bottom: 3px solid #ff6b35;
+            padding-bottom: 10px;
+            margin: 0;
+        }
+        
+        .model-selector {
+            margin: 20px 0;
+            text-align: center;
+        }
+        
+        .model-btn {
+            background: #ff6b35;
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            margin: 0 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            transition: background 0.3s;
+        }
+        
+        .model-btn:hover {
+            background: #e55a2b;
+        }
+        
+        .model-btn.active {
+            background: #27ae60;
+        }
+        
+        .form-section {
+            margin: 20px 0;
+            display: none;
+        }
+        
+        .form-section.active {
+            display: block;
+        }
+        
+        .form-group {
+            margin: 15px 0;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+            color: #2c3e50;
+        }
+        
+        input, select, textarea {
+            width: 100%;
+            padding: 10px;
+            border: 2px solid #bdc3c7;
+            border-radius: 5px;
+            font-size: 14px;
+            box-sizing: border-box;
+        }
+        
+        input:focus, select:focus, textarea:focus {
+            border-color: #ff6b35;
+            outline: none;
+        }
+        
+        .form-row {
+            display: flex;
+            gap: 15px;
+        }
+        
+        .form-row .form-group {
+            flex: 1;
+        }
+        
+        .generate-btn {
+            background: #27ae60;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 18px;
+            width: 100%;
+            margin-top: 20px;
+        }
+        
+        .generate-btn:hover {
+            background: #219a52;
+        }
+        
+        .receipt {
+            margin-top: 30px;
+            padding: 30px;
+            border: 2px solid #2c3e50;
+            background: white;
+            font-family: 'Courier New', monospace;
+            line-height: 1.6;
+            display: none;
+        }
+        
+        .receipt h2 {
+            text-align: center;
+            margin-bottom: 30px;
+            color: #2c3e50;
+        }
+        
+        .print-btn {
+            background: #8e44ad;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            margin-top: 20px;
+        }
+        
+        .info-box {
+            background: #ecf0f1;
+            padding: 15px;
+            border-radius: 5px;
+            margin: 20px 0;
+            border-left: 4px solid #ff6b35;
+        }
+        
+        @media print {
+            body * {
+                visibility: hidden;
+            }
+            .receipt, .receipt * {
+                visibility: visible;
+            }
+            .receipt {
+                position: absolute;
+                left: 0;
+                top: 0;
+                width: 100%;
+            }
+            .print-btn {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <div class="logo"></div>
+            <h1>Gerador de Recibos - Tiger Offers LLC</h1>
+        </div>
+        
+        <div class="info-box">
+            <strong>📋 Instruções:</strong>
+            <ul>
+                <li>Escolha o modelo baseado no tipo de conta bancária do prestador</li>
+                <li><strong>Recibo BRL:</strong> Para contas bancárias brasileiras (recebe em Reais)</li>
+                <li><strong>Recibo USD:</strong> Para contas internacionais (recebe em Dólares)</li>
+                <li>Preencha todos os campos obrigatórios</li>
+                <li>Gere o recibo e imprima ou salve como PDF</li>
+            </ul>
+        </div>
+        
+        <div class="model-selector">
+            <button class="model-btn active" onclick="selectModel('brl')">📱 Modelo BRL (Banco Brasileiro)</button>
+            <button class="model-btn" onclick="selectModel('usd')">🌍 Modelo USD (Conta Internacional)</button>
+        </div>
+        
+        <!-- Formulário BRL -->
+        <div id="form-brl" class="form-section active">
+            <h3>📱 Recibo BRL - Banco Brasileiro</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="brl-nome">Nome do Prestador *</label>
+                    <input type="text" id="brl-nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="brl-cpf">CPF ou CNPJ *</label>
+                    <input type="text" id="brl-cpf" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="brl-endereco">Endereço Completo *</label>
+                <input type="text" id="brl-endereco" required>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="brl-valor-usd">Valor Enviado (USD) *</label>
+                    <input type="number" id="brl-valor-usd" step="0.01" required>
+                </div>
+                <div class="form-group">
+                    <label for="brl-valor-brl">Valor Recebido (BRL) *</label>
+                    <input type="number" id="brl-valor-brl" step="0.01" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="brl-servicos">Descrição dos Serviços Prestados *</label>
+                <textarea id="brl-servicos" rows="3" required></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="brl-data-servico">Data da Prestação do Serviço *</label>
+                    <input type="date" id="brl-data-servico" required>
+                </div>
+                <div class="form-group">
+                    <label for="brl-data-pagamento">Data do Pagamento *</label>
+                    <input type="date" id="brl-data-pagamento" required>
+                </div>
+            </div>
+            
+            <h4>🏦 Dados Bancários (Conta Receptora)</h4>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="brl-banco">Banco *</label>
+                    <input type="text" id="brl-banco" required>
+                </div>
+                <div class="form-group">
+                    <label for="brl-agencia">Agência *</label>
+                    <input type="text" id="brl-agencia" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="brl-conta">Número da Conta *</label>
+                    <input type="text" id="brl-conta" required>
+                </div>
+                <div class="form-group">
+                    <label for="brl-tipo-conta">Tipo da Conta *</label>
+                    <select id="brl-tipo-conta" required>
+                        <option value="">Selecione...</option>
+                        <option value="Conta Corrente">Conta Corrente</option>
+                        <option value="Conta Poupança">Conta Poupança</option>
+                        <option value="Conta Salário">Conta Salário</option>
+                    </select>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="brl-titular">Nome do Titular da Conta *</label>
+                    <input type="text" id="brl-titular" required>
+                </div>
+                <div class="form-group">
+                    <label for="brl-cpf-titular">CPF/CNPJ do Titular *</label>
+                    <input type="text" id="brl-cpf-titular" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="brl-local">Local de Emissão *</label>
+                <input type="text" id="brl-local" required>
+            </div>
+        </div>
+        
+        <!-- Formulário USD -->
+        <div id="form-usd" class="form-section">
+            <h3>🌍 Recibo USD - Conta Internacional</h3>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="usd-nome">Nome do Prestador *</label>
+                    <input type="text" id="usd-nome" required>
+                </div>
+                <div class="form-group">
+                    <label for="usd-cpf">CPF ou CNPJ *</label>
+                    <input type="text" id="usd-cpf" required>
+                </div>
+            </div>
+            
+            <div class="form-group">
+                <label for="usd-endereco">Endereço Completo *</label>
+                <input type="text" id="usd-endereco" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="usd-valor">Valor Enviado/Recebido (USD) *</label>
+                <input type="number" id="usd-valor" step="0.01" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="usd-servicos">Descrição dos Serviços Prestados *</label>
+                <textarea id="usd-servicos" rows="3" required></textarea>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="usd-data-servico">Data da Prestação do Serviço *</label>
+                    <input type="date" id="usd-data-servico" required>
+                </div>
+                <div class="form-group">
+                    <label for="usd-data-pagamento">Data do Pagamento *</label>
+                    <input type="date" id="usd-data-pagamento" required>
+                </div>
+            </div>
+            
+            <h4>🌍 Dados Bancários Internacionais</h4>
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="usd-banco">Banco/Bank *</label>
+                    <input type="text" id="usd-banco" required>
+                </div>
+                <div class="form-group">
+                    <label for="usd-pais">País/Country *</label>
+                    <input type="text" id="usd-pais" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="usd-tipo-conta">Tipo de Conta/Account Type *</label>
+                    <input type="text" id="usd-tipo-conta" required>
+                </div>
+                <div class="form-group">
+                    <label for="usd-titular">Nome do Titular/Account Holder *</label>
+                    <input type="text" id="usd-titular" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="usd-cpf-titular">CPF/CNPJ do Titular (se aplicável)</label>
+                    <input type="text" id="usd-cpf-titular">
+                </div>
+                <div class="form-group">
+                    <label for="usd-iban">IBAN/Account Number *</label>
+                    <input type="text" id="usd-iban" required>
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="usd-swift">SWIFT/BIC *</label>
+                    <input type="text" id="usd-swift" required>
+                </div>
+                <div class="form-group">
+                    <label for="usd-local">Local de Emissão *</label>
+                    <input type="text" id="usd-local" required>
+                </div>
+            </div>
+        </div>
+        
+        <button class="generate-btn" onclick="generateReceipt()">📄 Gerar Recibo</button>
+        
+        <div id="receipt-output" class="receipt">
+            <div id="receipt-content"></div>
+            <button class="print-btn" onclick="window.print()">🖨️ Imprimir/Salvar PDF</button>
+        </div>
+    </div>
+
+    <script>
+        let currentModel = 'brl';
+        
+        function selectModel(model) {
+            currentModel = model;
+            
+            // Update button states
+            document.querySelectorAll('.model-btn').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            event.target.classList.add('active');
+            
+            // Show/hide forms
+            document.querySelectorAll('.form-section').forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(`form-${model}`).classList.add('active');
+        }
+        
+        function formatDate(dateStr) {
+            if (!dateStr) return '___/___/_____';
+            const date = new Date(dateStr);
+            const day = String(date.getDate()).padStart(2, '0');
+            const month = String(date.getMonth() + 1).padStart(2, '0');
+            const year = date.getFullYear();
+            return `${day}/${month}/${year}`;
+        }
+        
+        function generateReceipt() {
+            const today = new Date();
+            const todayStr = formatDate(today.toISOString().split('T')[0]);
+            let content = '';
+            
+            if (currentModel === 'brl') {
+                const nome = document.getElementById('brl-nome').value;
+                const cpf = document.getElementById('brl-cpf').value;
+                const endereco = document.getElementById('brl-endereco').value;
+                const valorUsd = document.getElementById('brl-valor-usd').value;
+                const valorBrl = document.getElementById('brl-valor-brl').value;
+                const servicos = document.getElementById('brl-servicos').value;
+                const dataServico = formatDate(document.getElementById('brl-data-servico').value);
+                const dataPagamento = formatDate(document.getElementById('brl-data-pagamento').value);
+                const banco = document.getElementById('brl-banco').value;
+                const agencia = document.getElementById('brl-agencia').value;
+                const conta = document.getElementById('brl-conta').value;
+                const tipoConta = document.getElementById('brl-tipo-conta').value;
+                const titular = document.getElementById('brl-titular').value;
+                const cpfTitular = document.getElementById('brl-cpf-titular').value;
+                const local = document.getElementById('brl-local').value;
+                
+                content = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 15px; background: #ff6b35; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; color: black;">T</div>
+                    <h2 style="margin: 0;">RECIBO DE PRESTAÇÃO DE SERVIÇOS / SERVICE RECEIPT</h2>
+                    <p style="margin: 5px 0; color: #666;">Tiger Offers LLC</p>
+                </div>
+                
+                <p><strong>Prestador / Provider:</strong> ${nome} (${cpf})</p>
+                <p><strong>Endereço / Address:</strong> ${endereco}</p>
+                
+                <p>Declaro, para os devidos fins, que recebi da empresa Tiger Offers LLC, registrada em Nevis sob nº L23436, a quantia de:</p>
+                <p>- USD ${valorUsd} (United States Dollars)</p>
+                <p>- BRL ${valorBrl} (Brazilian Reais)</p>
+                
+                <p><strong>Referente à prestação dos seguintes serviços / For the provision of the following services:</strong></p>
+                <p>${servicos}</p>
+                
+                <p><strong>Data da prestação / Date of Service:</strong> ${dataServico}</p>
+                <p><strong>Data do pagamento / Date of Payment:</strong> ${dataPagamento}</p>
+                
+                <p><strong>Meio de pagamento / Payment method:</strong></p>
+                <p>- Origem / From: Tiger Offers LLC – Revolut Business (USD)</p>
+                <p>- Destino / To: Banco no Brasil</p>
+                
+                <p><strong>Conta do recebedor em BRL / Receiver Account:</strong></p>
+                <p>- Banco: ${banco}</p>
+                <p>- Agência: ${agencia}</p>
+                <p>- Número da conta: ${conta}</p>
+                <p>- Tipo da conta: ${tipoConta}</p>
+                <p>- Nome do titular: ${titular}</p>
+                <p>- CPF/CNPJ do titular: ${cpfTitular}</p>
+                
+                <p><strong>Valor enviado / Amount sent:</strong> USD ${valorUsd}</p>
+                <p><strong>Valor recebido / Amount received:</strong> BRL ${valorBrl}</p>
+                
+                <p>Declaro que este pagamento quita integralmente os serviços prestados.</p>
+                <p><em>I declare that this payment settles the services provided in full.</em></p>
+                
+                <br><br>
+                <p><strong>Local / Place:</strong> ${local}</p>
+                <p><strong>Data / Date:</strong> ${todayStr}</p>
+                <p><strong>Assinatura / Signature:</strong> _________________________</p>
+                `;
+            } else {
+                const nome = document.getElementById('usd-nome').value;
+                const cpf = document.getElementById('usd-cpf').value;
+                const endereco = document.getElementById('usd-endereco').value;
+                const valor = document.getElementById('usd-valor').value;
+                const servicos = document.getElementById('usd-servicos').value;
+                const dataServico = formatDate(document.getElementById('usd-data-servico').value);
+                const dataPagamento = formatDate(document.getElementById('usd-data-pagamento').value);
+                const banco = document.getElementById('usd-banco').value;
+                const pais = document.getElementById('usd-pais').value;
+                const tipoConta = document.getElementById('usd-tipo-conta').value;
+                const titular = document.getElementById('usd-titular').value;
+                const cpfTitular = document.getElementById('usd-cpf-titular').value;
+                const iban = document.getElementById('usd-iban').value;
+                const swift = document.getElementById('usd-swift').value;
+                const local = document.getElementById('usd-local').value;
+                
+                content = `
+                <div style="text-align: center; margin-bottom: 30px;">
+                    <div style="width: 80px; height: 80px; margin: 0 auto 15px; background: #ff6b35; display: flex; align-items: center; justify-content: center; font-size: 48px; font-weight: bold; color: black;">T</div>
+                    <h2 style="margin: 0;">RECIBO DE PRESTAÇÃO DE SERVIÇOS / SERVICE RECEIPT</h2>
+                    <p style="margin: 5px 0; color: #666;">Tiger Offers LLC</p>
+                </div>
+                
+                <p><strong>Prestador / Provider:</strong> ${nome} (${cpf})</p>
+                <p><strong>Endereço / Address:</strong> ${endereco}</p>
+                
+                <p>Declaro, para os devidos fins, que recebi da empresa Tiger Offers LLC, registrada em Nevis sob nº L23436, a quantia de:</p>
+                <p>- USD ${valor} (United States Dollars)</p>
+                
+                <p><strong>Referente à prestação dos seguintes serviços / For the provision of the following services:</strong></p>
+                <p>${servicos}</p>
+                
+                <p><strong>Data da prestação / Date of Service:</strong> ${dataServico}</p>
+                <p><strong>Data do pagamento / Date of Payment:</strong> ${dataPagamento}</p>
+                
+                <p><strong>Meio de pagamento / Payment method:</strong></p>
+                <p>- Origem / From: Tiger Offers LLC – Revolut Business (USD)</p>
+                <p>- Destino / To: Conta internacional</p>
+                
+                <p><strong>Conta do recebedor em USD / Receiver Account:</strong></p>
+                <p>- Banco / Bank: ${banco}</p>
+                <p>- País / Country: ${pais}</p>
+                <p>- Tipo de conta / Account Type: ${tipoConta}</p>
+                <p>- Nome do titular / Account Holder: ${titular}</p>
+                ${cpfTitular ? `<p>- CPF/CNPJ do titular: ${cpfTitular}</p>` : ''}
+                <p>- IBAN / Account Number: ${iban}</p>
+                <p>- SWIFT/BIC: ${swift}</p>
+                
+                <p><strong>Valor enviado / Amount sent:</strong> USD ${valor}</p>
+                
+                <p>Declaro que este pagamento quita integralmente os serviços prestados.</p>
+                <p><em>I declare that this payment settles the services provided in full.</em></p>
+                
+                <br><br>
+                <p><strong>Local / Place:</strong> ${local}</p>
+                <p><strong>Data / Date:</strong> ${todayStr}</p>
+                <p><strong>Assinatura / Signature:</strong> _________________________</p>
+                `;
+            }
+            
+            document.getElementById('receipt-content').innerHTML = content;
+            document.getElementById('receipt-output').style.display = 'block';
+            document.getElementById('receipt-output').scrollIntoView({ behavior: 'smooth' });
+        }
+    </script>
+</body>
+</html>
